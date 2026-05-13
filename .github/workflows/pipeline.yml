@@ -13,8 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install Dependencies
-        run: pip install -r Food-Delivery-Chatbot/requirements.txt
+        run: pip install -r Food-Delivery-Chatbot/fooddelivery/requirements.txt
       - name: Push files to Frontend Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: python Food-Delivery-Chatbot/hosting/hosting.py
+        run: python Food-Delivery-Chatbot/fooddelivery/hosting/hosting.py
