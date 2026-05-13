@@ -235,19 +235,19 @@ if "memory" not in st.session_state:
 
 ########################################## LOGIN SCREEN #########################################
 if not st.session_state.authenticated:
-    st.title("🍽️ FoodHub Customer Support")
+    st.title("🍔 FoodHub Customer Support")
     st.subheader("Please log in to continue")
 
     with st.form("login_form"):
         cust_id_input = st.text_input("Customer ID", placeholder="e.g. C1011")
-        password_input = st.text_input("Password", type="password", placeholder="foodhub123")
+        password_input = st.text_input("Password", type="password", placeholder="fcs123")
         submitted = st.form_submit_button("Login")
 
     if submitted:
         cid = cust_id_input.strip().upper()
         if not re.fullmatch(r"C\d{4}", cid):
             st.error("Customer ID must be in the format C#### (e.g. C1011).")
-        elif password_input != "foodhub123":
+        elif password_input != "fcs123":
             st.error("Incorrect password. Please try again.")
         elif not customer_exists(cid):
             st.error(f"No orders found for customer ID {cid}. Please check and try again.")
@@ -259,7 +259,7 @@ if not st.session_state.authenticated:
             ]
             st.rerun()
 
-    st.caption("Default password: **foodhub123**")
+    st.caption("Default password: **fcs123**")
     st.stop()
 
 ########################################## CHAT SCREEN #########################################
