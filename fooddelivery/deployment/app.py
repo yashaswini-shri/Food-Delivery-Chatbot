@@ -127,7 +127,7 @@ CHATBOT_SYSTEM_PROMPT = (
 # Setting dangerous and angry words
 
 BLOCK_KW = ["hacker", "hack", "exploit", "all orders", "every order", "dump", "inject", "bypass", "delete", "delete database", "truncate"]
-ANGRY_KW = ["multiple times", "no resolution", "still waiting", "unresolved", "immediate, "worst service", "not received", "angry"]
+ANGRY_KW = ["multiple times", "no resolution", "still waiting", "unresolved", "immediate", "worst service", "not received", "angry"]
 
 
 @st.cache_resource
