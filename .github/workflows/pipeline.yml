@@ -1,17 +1,21 @@
+name: Food Delivery Chatbot MLOps Pipeline
+
+on:
+  push:
+    branches:
+      - main  # Automatically triggers on push to the main branch
 
 jobs:
-  deploy:
+  deploy-hosting:
     runs-on: ubuntu-latest
-
-    env:
-      HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      GROQ_KEY: ${{ secrets.GROQ_KEY }}
-
+    needs: []
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: pip install huggingface_hub
-
-      - name: Run deploy script
+      - uses: actions/checkout@v3
+      - name: Install Dependencies
+        run: pip install -r fooddelivery/requirements.txt
+      - name: Push files to Frontend Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          GROQ_KEY: ${{ secrets.GROQ_KEY }}
+          
         run: python fooddelivery/hosting/hosting.py
