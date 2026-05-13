@@ -63,7 +63,7 @@ def get_llm():
         st.error("GROQ_API_KEY not set. Add it to .streamlit/secrets.toml or as an env var.")
         st.stop()
     return ChatGroq(
-        model="meta-llama/llama-3.3-70b-versatile",
+        model="llama-3.3-70b-versatile",
         temperature=0,
         groq_api_key=key,
     )
