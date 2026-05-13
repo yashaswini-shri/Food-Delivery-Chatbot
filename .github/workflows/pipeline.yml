@@ -1,20 +1,302 @@
 
-name: Food Delivery Chatbot MLOps Pipeline
+
+
+import os
+
+from huggingface_hub import HfApi
+
+api = HfApi(token=os.getenv("HF_TOKEN"))
+repo_id = "yashaswinigopalan/food-delivery-chatbot"
+
+api.upload_folder(
+        folder_path="fooddelivery/deployment",  # the local folder containing your files
+        repo_id=repo_id,  # the target repo
+        repo_type="space",  # dataset, model, or space
+        path_in_repo="",  # optional: subfolder path inside the repo
+)
+GROQ_KEY = os.getenv("GROQ_KEY")
+# ADD THE GROQ API KEY TO HF REPO SECRETS
+api.add_space_secret(
+    repo_id=repo_id,
+    key="GROQ_KEY",
+    value=GROQ_KEY
+). getting error:1s
+Run python fooddelivery/hosting/hosting.py
+No files have been modified since last commit. Skipping to prevent empty commit.
+Traceback (most recent call last):
+  File "/home/runner/.local/lib/python3.12/site-packages/huggingface_hub/utils/_http.py", line 409, in hf_raise_for_status
+    response.raise_for_status()
+  File "/home/runner/.local/lib/python3.12/site-packages/requests/models.py", line 1167, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error: Bad Request for url: https://huggingface.co/api/spaces/yashaswinigopalan/food-delivery-chatbot/secrets
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/runner/work/Food-Delivery-Chatbot/Food-Delivery-Chatbot/fooddelivery/hosting/hosting.py", line 17, in <module>
+    api.add_space_secret(
+  File "/home/runner/.local/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/.local/lib/python3.12/site-packages/huggingface_hub/hf_api.py", line 6981, in add_space_secret
+    hf_raise_for_status(r)
+  File "/home/runner/.local/lib/python3.12/site-packages/huggingface_hub/utils/_http.py", line 465, in hf_raise_for_status
+    raise _format(BadRequestError, message, response) from e
+huggingface_hub.errors.BadRequestError: (Request ID: Root=1-6a041ca0-7c13ffc6232b2b4b69c2817e;931a47cd-f55c-4a74-b23e-407e232bd1e1)
+
+Bad request:
+* Invalid input: expected string, received null * at value
+✖ Invalid input: expected string, received null
+  → at value
+Error: Process completed with exit code 1.
+
+The error is very clear: Hugging Face is rejecting the secret because the value is null.
+
+✅ Root Cause
+This line:
+
+GROQ_KEY = os.getenv("GROQ_KEY")
+is returning:
+
+None
+Then this gets passed here:
+
+api.add_space_secret(
+    repo_id=repo_id,
+    key="GROQ_KEY",
+    value=GROQ_KEY
+)
+So Hugging Face receives:
+
+"value": null
+and throws:
+
+Invalid input: expected string, received null
+
+✅ Why os.getenv("GROQ_KEY") is None
+You're running this inside GitHub Actions.
+
+That means GROQ_KEY must be added in GitHub Secrets.
+
+If it is not added, Python gets:
+
+None
+✅ Fix Step-by-Step
+🔹 Step 1: Add GROQ_KEY in GitHub Secrets
+Go to:
+
+GitHub Repository Settings Secrets Page
+
+Then:
+
+Your Repo → Settings → Secrets and variables → Actions
+Add:
+
+Name	Value
+GROQ_KEY	your actual Groq API key
+🔹 Step 2: Use It in GitHub Workflow
+Inside .github/workflows/deploy.yml
+
+env:
+  HF_TOKEN: ${{ secrets.HF_TOKEN }}
+  GROQ_KEY: ${{ secrets.GROQ_KEY }}
+Example:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      GROQ_KEY: ${{ secrets.GROQ_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install deps
+        run: pip install huggingface_hub
+
+      - name: Deploy
+        run: python fooddelivery/hosting/hosting.py
+✅ Step 3: Add Safety Check in Python
+Modify your script:
+
+import os
+from huggingface_hub import HfApi
+
+HF_TOKEN = os.getenv("HF_TOKEN")
+GROQ_KEY = os.getenv("GROQ_KEY")
+
+if not GROQ_KEY:
+    raise ValueError("GROQ_KEY is missing in environment variables")
+
+api = HfApi(token=HF_TOKEN)
+
+repo_id = "yashaswinigopalan/food-delivery-chatbot"
+
+api.upload_folder(
+    folder_path="fooddelivery/deployment",
+    repo_id=repo_id,
+    repo_type="space",
+    path_in_repo=""
+)
+
+api.add_space_secret(
+    repo_id=repo_id,
+    key="GROQ_KEY",
+    value=GROQ_KEY
+)
+✅ Why Upload Worked But Secret Failed
+Because:
+
+✔ HF_TOKEN exists
+❌ GROQ_KEY missing
+
+So repo upload works, secret add fails.
+
+✅ Quick Debug Test
+Add this before add_space_secret():
+
+print("GROQ_KEY =", os.getenv("GROQ_KEY"))
+If output is:
+
+GROQ_KEY = None
+Then GitHub secret is missing.
+
+✅ Final Answer
+Your script is correct. The problem is GitHub Actions does not have GROQ_KEY secret configured.
+
+Add:
+
+GROQ_KEY
+
+Use it in workflow env
+
+Then rerun.
+
+✅ If you'd like, I can also give you a complete GitHub Actions YAML that auto deploys Hugging Face Space with secrets every push (production ready).
+
+
+import os
+
+from huggingface_hub import HfApi
+
+api = HfApi(token=os.getenv("HF_TOKEN"))
+repo_id = "yashaswinigopalan/food-delivery-chatbot"
+
+api.upload_folder(
+        folder_path="fooddelivery/deployment",  # the local folder containing your files
+        repo_id=repo_id,  # the target repo
+        repo_type="space",  # dataset, model, or space
+        path_in_repo="",  # optional: subfolder path inside the repo
+)
+GROQ_KEY = os.getenv("GROQ_KEY")
+# ADD THE GROQ API KEY TO HF REPO SECRETS
+api.add_space_secret(
+    repo_id=repo_id,
+    key="GROQ_KEY",
+    value=GROQ_KEY
+)
+
+Your code is structurally fine. The failure is almost certainly because:
+
+GROQ_KEY = os.getenv("GROQ_KEY")
+is returning None, so Hugging Face rejects:
+
+value=None
+with:
+
+Invalid input: expected string, received null
+
+✅ Corrected + Safer Version
+import os
+from huggingface_hub import HfApi
+
+# Read tokens from environment
+HF_TOKEN = os.getenv("HF_TOKEN")
+GROQ_KEY = os.getenv("GROQ_KEY")
+
+# Validate env vars
+if not HF_TOKEN:
+    raise ValueError("HF_TOKEN is missing")
+
+if not GROQ_KEY:
+    raise ValueError("GROQ_KEY is missing")
+
+# Authenticate
+api = HfApi(token=HF_TOKEN)
+
+repo_id = "yashaswinigopalan/food-delivery-chatbot"
+
+# Upload files to Hugging Face Space
+api.upload_folder(
+    folder_path="fooddelivery/deployment",
+    repo_id=repo_id,
+    repo_type="space",
+    path_in_repo=""
+)
+
+# Add secret to Hugging Face Space
+api.add_space_secret(
+    repo_id=repo_id,
+    key="GROQ_KEY",
+    value=GROQ_KEY
+)
+
+print("Deployment successful.")
+✅ What You Need in GitHub Secrets
+Go to your repo:
+
+GitHub Repository Settings
+
+Then add:
+
+Secret Name	Value
+HF_TOKEN	Hugging Face token
+GROQ_KEY	Groq API key
+✅ GitHub Actions Workflow Example
+name: Deploy to HF Space
 
 on:
   push:
-    branches:
-      - main  # Automatically triggers on push to the main branch
+    branches: [main]
 
 jobs:
-  deploy-hosting:
+  deploy:
     runs-on: ubuntu-latest
-    needs: []
+
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      GROQ_KEY: ${{ secrets.GROQ_KEY }}
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Install Dependencies
-        run: pip install -r fooddelivery/requirements.txt
-      - name: Push files to Frontend Hugging Face Space
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: pip install huggingface_hub
+
+      - name: Run deploy script
         run: python fooddelivery/hosting/hosting.py
+✅ Debug Tip
+Add this temporarily:
+
+print("HF_TOKEN:", HF_TOKEN is not None)
+print("GROQ_KEY:", GROQ_KEY is not None)
+Expected:
+
+HF_TOKEN: True
+GROQ_KEY: True
+✅ Important Note
+Every time GitHub Action runs:
+
+api.add_space_secret(...)
+it updates the secret again. That’s okay.
+
+✅ Final Verdict
+Your code is correct. Only missing:
+
+✔ GROQ_KEY in GitHub secrets
+✔ validation checks
+
+✅ If you'd like, I can also give you a best practice version that auto creates the Hugging Face Space if it doesn't exist + uploads + sets secrets.
+
