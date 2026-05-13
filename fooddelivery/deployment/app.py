@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 ########################################## PAGE CONFIGURATION #########################################
 st.set_page_config(
     page_title="Food Delivery Chatbot",
-    page_icon="🍔"
+    page_icon="🍔",
     layout="centered",
 )
 
