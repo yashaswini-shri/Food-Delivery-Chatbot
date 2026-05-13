@@ -4,7 +4,7 @@ import os
 from huggingface_hub import HfApi
 
 api = HfApi(token=os.getenv("HF_TOKEN"))
-repo_id = "Yashaswinigopalan/food-delivery-chatbot"
+repo_id = "yashaswinigopalan/food-delivery-chatbot"
 
 api.upload_folder(
         folder_path="fooddelivery/deployment",  # the local folder containing your files
