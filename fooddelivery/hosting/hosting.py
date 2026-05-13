@@ -12,7 +12,7 @@ api.upload_folder(
         repo_type="space",  # dataset, model, or space
         path_in_repo="",  # optional: subfolder path inside the repo
 )
-GROQ_KEY = userdata.get("GROQ_KEY")
+GROQ_KEY = os.getenv("GROQ_KEY")
 # ADD THE GROQ API KEY TO HF REPO SECRETS
 api.add_space_secret(
     repo_id=repo_id,
